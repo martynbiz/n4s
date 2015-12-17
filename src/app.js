@@ -1,5 +1,7 @@
 // JavaScript Document
 
+if(typeof n4s === "undefined") n4s = {};
+
 // dependancies: jQuery
 
 var n4s = (function() {
