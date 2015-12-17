@@ -1,5 +1,5 @@
 
-if(typeof n4s === "undefined") n4s = {};
+if(typeof n4s === "undefined") var n4s = {};
 
 /**
  * An instance for storing and retrieving data

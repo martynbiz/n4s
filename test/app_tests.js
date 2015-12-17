@@ -59,111 +59,111 @@ QUnit.module( "n4s.app", function(hooks) {
 
         });
 
-        QUnit.test( "Test send when get_cached is not set (default: false)", function( assert ) {
-
-            dataProvider = [FIRST_CALL_TEXT, SECOND_CALL_TEXT];
-
-            n4s.http.send({
-                success: function(actualData) {
-                    assert.equal( FIRST_CALL_TEXT, actualData );
-                },
-                url: 'some_resource.php',
-            });
-
-            n4s.http.send({
-                success: function(actualData) {
-                    assert.equal( SECOND_CALL_TEXT, actualData );
-                },
-                url: 'some_resource.php',
-            });
-        });
-
-        QUnit.test( "Test send when get_cached is true", function( assert ) {
-
-            dataProvider = [FIRST_CALL_TEXT, SECOND_CALL_TEXT];
-
-            n4s.http.send({
-                success: function(actualData) {
-                    assert.equal( FIRST_CALL_TEXT, actualData );
-                },
-                url: 'some_resource.php',
-            });
-
-            n4s.http.send({
-                success: function(actualData) {
-                    assert.equal( FIRST_CALL_TEXT, actualData );
-                },
-                url: 'some_resource.php',
-                get_cached: true
-            });
-        });
-
-        QUnit.test( "Test send when data_type is 'json'", function( assert ) {
-
-            dataProvider = [FIRST_CALL_TEXT];
-
-            n4s.http.send({
-                success: function(actualData) {
-                    assert.equal( FIRST_CALL_JSON, actualData );
-                },
-                url: 'some_resource.php',
-                data_type: "json"
-            });
-        });
-
-    });
-
-    QUnit.module( "Error statuses", function(hooks) {
-
-        // set the status code to indicate an error
-        hooks.beforeEach( function() {
-            statusCode = 500;
-        } );
-
-        // ====================================
-        // tests
-
-        QUnit.test( "Test send handles errors", function( assert ) {
-
-            n4s.http.send({
-                success: function(data) {
-                    assert.equal(1, 2, "Wrong handler called");
-                },
-                error: function(data) {
-                    assert.equal(1, 1);
-                },
-                url: 'some_resource.php',
-            });
-
-        });
-
-        QUnit.test( "Test data is passed into error handler", function( assert ) {
-
-            dataProvider = [FIRST_CALL_TEXT];
-
-            n4s.http.send({
-                error: function(data) {
-                    assert.equal(data, FIRST_CALL_TEXT);
-                },
-                url: 'some_resource.php',
-            });
-
-        });
-
-        QUnit.test( "Test getLastResponse()", function( assert ) {
-
-            dataProvider = [FIRST_CALL_TEXT];
-
-            n4s.http.send({
-                error: function(data) {
-                    var response = n4s.http.getLastResponse();
-                    assert.equal(response.status, 500);
-                    assert.equal(response.data, FIRST_CALL_TEXT);
-                },
-                url: 'some_resource.php',
-            });
-
-        });
+    //     QUnit.test( "Test send when get_cached is not set (default: false)", function( assert ) {
+    //
+    //         dataProvider = [FIRST_CALL_TEXT, SECOND_CALL_TEXT];
+    //
+    //         n4s.http.send({
+    //             success: function(actualData) {
+    //                 assert.equal( FIRST_CALL_TEXT, actualData );
+    //             },
+    //             url: 'some_resource.php',
+    //         });
+    //
+    //         n4s.http.send({
+    //             success: function(actualData) {
+    //                 assert.equal( SECOND_CALL_TEXT, actualData );
+    //             },
+    //             url: 'some_resource.php',
+    //         });
+    //     });
+    //
+    //     QUnit.test( "Test send when get_cached is true", function( assert ) {
+    //
+    //         dataProvider = [FIRST_CALL_TEXT, SECOND_CALL_TEXT];
+    //
+    //         n4s.http.send({
+    //             success: function(actualData) {
+    //                 assert.equal( FIRST_CALL_TEXT, actualData );
+    //             },
+    //             url: 'some_resource.php',
+    //         });
+    //
+    //         n4s.http.send({
+    //             success: function(actualData) {
+    //                 assert.equal( FIRST_CALL_TEXT, actualData );
+    //             },
+    //             url: 'some_resource.php',
+    //             get_cached: true
+    //         });
+    //     });
+    //
+    //     QUnit.test( "Test send when data_type is 'json'", function( assert ) {
+    //
+    //         dataProvider = [FIRST_CALL_TEXT];
+    //
+    //         n4s.http.send({
+    //             success: function(actualData) {
+    //                 assert.equal( FIRST_CALL_JSON, actualData );
+    //             },
+    //             url: 'some_resource.php',
+    //             data_type: "json"
+    //         });
+    //     });
+    //
+    // });
+    //
+    // QUnit.module( "Error statuses", function(hooks) {
+    //
+    //     // set the status code to indicate an error
+    //     hooks.beforeEach( function() {
+    //         statusCode = 500;
+    //     } );
+    //
+    //     // ====================================
+    //     // tests
+    //
+    //     QUnit.test( "Test send handles errors", function( assert ) {
+    //
+    //         n4s.http.send({
+    //             success: function(data) {
+    //                 assert.equal(1, 2, "Wrong handler called");
+    //             },
+    //             error: function(data) {
+    //                 assert.equal(1, 1);
+    //             },
+    //             url: 'some_resource.php',
+    //         });
+    //
+    //     });
+    //
+    //     QUnit.test( "Test data is passed into error handler", function( assert ) {
+    //
+    //         dataProvider = [FIRST_CALL_TEXT];
+    //
+    //         n4s.http.send({
+    //             error: function(data) {
+    //                 assert.equal(data, FIRST_CALL_TEXT);
+    //             },
+    //             url: 'some_resource.php',
+    //         });
+    //
+    //     });
+    //
+    //     QUnit.test( "Test getLastResponse()", function( assert ) {
+    //
+    //         dataProvider = [FIRST_CALL_TEXT];
+    //
+    //         n4s.http.send({
+    //             error: function(data) {
+    //                 var response = n4s.http.getLastResponse();
+    //                 assert.equal(response.status, 500);
+    //                 assert.equal(response.data, FIRST_CALL_TEXT);
+    //             },
+    //             url: 'some_resource.php',
+    //         });
+    //
+    //     });
 
     });
 

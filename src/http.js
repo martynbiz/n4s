@@ -1,5 +1,5 @@
 
-if(typeof n4s === "undefined") n4s = {};
+if(typeof n4s === "undefined") var n4s = {};
 
 /**
  * Ajax caller with built in caching (something jquery doesn't offer)
