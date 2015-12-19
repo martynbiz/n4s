@@ -1,11 +1,13 @@
 # N4S Links
 
-This hijax links and forms and performs AJAX requests instead. It is is customizable too so
-can be catered to different requirements.
+Instead of reloading the entire HTML, images, CSS and JavaScript, this library allows every
+link and form to load new HTML using AJAX. This means CSS and JavsScript doesn't need to be re-
+rendered by updating the HTML only. This results in faster page loads, and less bandwidth
+required. It is is customizable too so can be catered to different requirements.
 
 ## Getting started ##
 
-The following is all that is required to hijax links and forms
+The following is all that is required to hijack links and form submissions:
 
 ```javascript
 $(function() {
@@ -15,7 +17,8 @@ $(function() {
 
 ## Callback function ##
 
-As it's quite likely you'll want to assign event handlers to new HTML, this function will
+As it's quite likely you'll want to assign event handlers to new HTML when the website
+loads for the first time and when new HTML is loaded by AJAX, this callback function will
 be run every time new HTML is loaded. Anything you want to set in such case should be
 within this function.
 
@@ -29,8 +32,8 @@ n4s.init(function() {
 ## Options ##
 
 Options can be passed to enable further control of the library. For example, if you don't want
-form submissions to be handled by the library this can be switched off. The default options are
-passed in below:
+form submissions to be loaded by AJAX this can be switched off. The default options are
+shown in below but can be overwritten:
 
 ```javascript
 n4s.init(null, {
