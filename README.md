@@ -1,52 +1,84 @@
 # N4S Links
 
-Similar to Rails turbolinks. Will replace links in HTML with AJAX loaded links. Allows for caching too.
+This hijax links and forms and performs AJAX requests instead. It is is customizable too so
+can be catered to different requirements.
 
-thoughts:
-- use n4s links for all links
-- use loaded for template sections (e.g. pagination, search)
+## Getting started ##
+
+The following is all that is required to hijax links and forms
 
 ```javascript
-n4s.config({
+$(function() {
+    n4s.init();
+})
+```
 
-});
+## Callback function ##
 
-// convert all links to n4s links ;)
-// existing link behaviour will be overwritten
-n4s.init(); // n4s.loadHTML(this.href);
+As it's quite likely you'll want to assign event handlers to new HTML, this function will
+be run every time new HTML is loaded. Anything you want to set in such case should be
+within this function.
 
-// ^ default, no args
-n4s.init("a", function(e) {
-  n4s.loadHTML(this.href, "body"); // extract body, and load to body
-}
-
-
-n4s.init({
-    runScripts: true,
-});
-
-
-// pagination - first arg is query selector, second is override click function on links (blur, push state, etc will still be dealt with)
-// existing link behaviour will be overwritten
-n4s.init(".account-pagination a", function(e) {
-
-  // this requires the server to provide the template files, and href to also return json
-  //n4s.dispatcher.loadTemplate("/templates/accounts/table.mustache", {//...container?});
-  //n4s.dispatcher.loadData(this.href);
-
-  // this way requires no additional work on the server, but envokes the full app
-  n4s.loadHTML(this.href, "#accountRows"); // will fetch the full html, concat the matching #accountRows html, write to #accountRows
-});
-
-// convert sections (pagination, table order, search)
-$(".account-pagination a").each(function(e) {
-  this.off().on(function() {
-    loaded.dispatch.loadTemplate("/templates/accounts/table.mustache");
-    loaded.dispatch.loadData(this.href);
-
-    n4s.setLinks();
-
-    // update history?
-  });
+```javascript
+n4s.init(function() {
+    // e.g. open welcome model (if present)
+    $('#welcome').modal('show');
 });
 ```
+
+## Options ##
+
+Options can be passed to enable further control of the library. For example, if you don't want
+form submissions to be handled by the library this can be switched off. The default options are
+passed in below:
+
+```javascript
+n4s.init(null, {
+
+    // cache all html pages - good for static websites or get forms
+    // not so good for websites with post forms, or dynamic pages
+    // boolean
+    cache: false,
+
+    // when html is loaded, will we run scripts (inline and external within body tag).
+    // boolean
+    run_scripts: false,
+
+    // when html is loaded, will we run inline scripts within body tag
+    // will override run_scripts  
+    // TODO this  
+    // boolean
+    run_inline_scripts: false,
+
+    // when html is loaded, will we run external scripts within body tag
+    // will override run_scripts  
+    // TODO this  
+    // boolean
+    run_external_scripts: false,
+
+    // init links with ajax loading
+    // boolean
+    init_links: true,
+
+    // init forms with ajax loading
+    // boolean
+    init_forms: true
+});
+```
+
+## Loading HTML only ##
+
+Links and forms when click/submitted will use the loadHtml to load new HTML. However, this
+method is also available should you need to call it by itself for whatever reason.
+
+```javascript
+n4s.loadHtml(url, {
+    method: "POST",
+    data: {
+        name: name
+    }
+});
+```
+
+Note: the same options given to init() function (e.g. run_scripts) can also be overwritten
+here for this call only.
