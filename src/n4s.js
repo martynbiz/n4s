@@ -6,6 +6,8 @@
  * @version 0.0.0
  */
 
+ // TODO handle hash links e.g. products.php#table
+
  /**
   * An instance for storing and retrieving data
   * External to ajax encase I wanna use it throughout the app
@@ -133,17 +135,24 @@
 		// loop through each link and assign onclick event listener
         if (options['init_links']) {
             $("a").each( function(index, a) {
-                $(a).on("click", function(e) {
+                if ($(this).attr('href').match(/^#/)) { // e.g. #table and #
+                    // TODO handle hash e.g. #table
+                } else if ($(this).attr('href').match(/#/)) { // e.g. products.php#table
+                    // TODO handle hash e.g. products.php#table
+                } else {
+                    $(a).on("click", function(e) {
 
-        			// load the HTML
-        			_loadHtml(this);
+            			// load the HTML
+            			_loadHtml(this);
 
-        			// blur the link
-        			this.blur();
+            			// blur the link
+            			this.blur();
 
-        			// don't let the browser load do handle the link click
-        			e.preventDefault();
-        		});
+            			// don't let the browser load do handle the link click
+            			e.preventDefault();
+            		});
+                }
+
             });
         }
 
@@ -177,10 +186,10 @@
 
 	/**
 	 * This will load the url and set the html
-	 * @param string The path (href) to get html
+	 * @param string url The path (href) to get html
 	 * @return void
 	 */
-	var _loadHtml = function(href, options) {
+	var _loadHtml = function(url, options) {
 
         // overwrite default options with passed in options
         // the first argument ensures we create a new object as we don't want to
@@ -190,7 +199,7 @@
 		// get the html from the server
         // some of the ajax options (e.g. data) can be overwritten in this method
 		$.ajax({
-			url: href,
+			url: url,
 			cache: options['cache'],
             method: options['method'] ? options['method'] : "get",
             data: options['data'] ? options['data'] : {},
