@@ -10,6 +10,9 @@
 
         <p>Search below, or <a href="contact.html">contact us</a></p>
 
+        <p>Test anchor links - <a href="#">#</a> and <a href="#table">#table</a></p>
+
+        <a name="table"></a>
         <form action="products.php" method="post" name="searchForm">
             <input type="text" name="search" value="<?php echo @$_REQUEST['search']; ?>">
             <input type="submit" name="Search">

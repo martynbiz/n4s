@@ -36,6 +36,13 @@
      */
     var _cache = {};
 
+    /**
+     * This is the current pathname so we don't run popstate handler when only
+     *   #hash has
+     * @var string
+     */
+    var _currentPathName = location.pathname;
+
 	/**
 	 * This will initiate elements by query
  	 * @param function callback This is the callback for new and initial html
@@ -92,11 +99,19 @@
             // else, get html
             // note: get params will be cached, but not post. only the last post
             //   to an action page will be cached
-            var cached = _cache[location.pathname];
-            if (cached) {
-                document.title = cached.title;
-                $("body").html(cached.html);
-                _setHtml();
+
+            // this condition just checks if the path has changed, as #hash will also
+            // trigger this event
+            if (location.pathname != _currentPathName) {
+                var cached = _cache[location.pathname];
+                if (cached) {
+                    document.title = cached.title;
+                    $("body").html(cached.html);
+                    _setHtml();
+                }
+
+                // set new currentPathName
+                _currentPathName = location.pathname;
             }
         });
 
@@ -134,7 +149,10 @@
 
 		// loop through each link and assign onclick event listener
         if (options['init_links']) {
-            $("a").each( function(index, a) {
+
+            // only get links with href (so name="..." is not picked up)
+            $("a[href]").each( function(index, a) {
+
                 if ($(this).attr('href').match(/^#/)) { // e.g. #table and #
                     // TODO handle hash e.g. #table
                 } else if ($(this).attr('href').match(/#/)) { // e.g. products.php#table
