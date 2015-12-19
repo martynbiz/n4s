@@ -3,231 +3,237 @@ define(["jquery"],function($){
 /**
  * @name n4s
  * @module n4s
- * @desc Independent cache storage for ajax and JS apps
+ * @desc Load HTML by ajax to reduce page rendering times
  * @author Martyn Bissett
  * @version 0.0.0
  */
 
-/**
- * An instance for storing and retrieving data
- * External to ajax encase I wanna use it throughout the app
- */
-n4s = (function() {
+ /**
+  * An instance for storing and retrieving data
+  * External to ajax encase I wanna use it throughout the app
+  */
+ n4s = (function() {
 
 	/**
-	 * @var object The cache
+	 * This is the function that is run when we have new HTML (e.g. set onclick)
+	 * It is passed in with init()
+	 * @var function
 	 */
-	var _cache = {};
-
-	/**
-	 * Get a cached item
-	 * @param string key The key to set in the cache
-	 * @return mixed
-	 */
-	var _get = function(key) {
- 		return _cache[key];
- 	};
-
-	/**
-	 * Set a cache item
-	 * @param string key The key to set in the cache
-	 * @param mixed value The cached item
-	 */
-	var _set = function(url, data) {
-		_cache[url] = data;
+	var _handler = function() {
+		// empty by default
 	};
 
 	/**
-	 * Clean (empty) the cache
-	 * @return void
-	 */
-	var _flush = function() {
- 	  _cache = {};
-	};
-
-	return {
-		get: _get,
-		set: _set,
-		flush: _flush
-	};
-})();
-
-/**
- * @name n4s library
- * @module n4s.http
- * @desc Independent http caller (ajax)
- * @author Martyn Bissett
- * @version 0.0.0
- */
-
-if(typeof n4s === "undefined") n4s = {};
-
-/**
- * Ajax caller with built in caching (something jquery doesn't offer)
- * Dependencies: cache, utils
- */
-n4s.http = function() {
-
-	/**
-	 * The last response
+	 * Options for the library (e.g. cache pages)
 	 * @var object
 	 */
-	var _lastResponse = {};
+	var _options = {};
+
+    /**
+     * Cache will allow us to store pages, helpful for restoring back button
+     * without having to loadHtml again
+     * @var object
+     */
+    var _cache = {};
 
 	/**
-	 * prepare the data depending on what dataType is (e.g. JSON)
-	 * @param mixed data The data to convert to another type (e.g json)
-	 * @param string dataType e.g. "json"
-	 * @return mixed Prepared data
+	 * This will initiate elements by query
+ 	 * @param function callback This is the callback for new and initial html
+	 * @param string query jQuery selector
+	 * @param void
 	 */
-	var _prepareData = function (data, dataType) {
-		switch(dataType.toUpperCase()) {
-			case "JSON":
-				data = JSON.parse(data);
-				break;
-		}
-		return data;
-	};
+	var _init = function(handler, options) {
 
-	/**
-	 * Will return the last response object
-	 * @return object
-	 */
-	var _getLastResponse = function() {
-		return _lastResponse;
-	};
+        // overwrite default options with passed in options
+        _options = $.extend({
 
-	/**
-	 * Will return the last response object
-	 * @return object
-	 */
-	var _setLastResponse = function(xmlhttp, data) {
-		_lastResponse = {
-			status: xmlhttp.status,
-			data: data,
-		};
-	};
+            // get from cache?
+            // boolean
+            cache: false,
 
-	/**
-	 * Fetch data from the server
-	 */
-	var _send = function(options) {
+            // when html is loaded, will we run inline scripts?
+            // boolean
+            run_scripts: false,
 
- 		// default options
- 		options = n4s.utils.extend({
- 			success: function() {
-				console.log("n4s.http: Success handler not defined");
-			},
-			error: function() {
-				console.log("n4s.http: Error handler not defined");
-			},
- 			get_cached: false,
- 			method: "GET",
- 			data_type: "text",
- 			data: null
- 		}, options);
+            // when html is loaded, will we run inline scripts within body tag
+            // will override run_scripts
+            // TODO this
+            // boolean
+            run_inline_scripts: false,
 
- 		// check cache
- 		if(options.get_cached && n4s.cache.get(options.url)) {
- 			options.success(_prepareData(n4s.cache.get(options.url), options.data_type), options.data_type);
- 			return true;
- 		}
+            // when html is loaded, will we run external scripts within body tag
+            // will override run_scripts
+            // TODO this
+            // boolean
+            run_external_scripts: false,
 
- 		// make ajax call
- 		var xmlhttp;
- 		if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
-			xmlhttp = new XMLHttpRequest();
-		} else {// code for IE6, IE5
-			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-		}
+            // the default method for fetching html
+            // string get|post
+            method: "get",
 
- 		xmlhttp.onreadystatechange = function() {
- 			if (xmlhttp.readyState==4) {
+            // the default data to send with requests (for links not required)
+            // object
+            data: {},
 
-				var data = _prepareData(xmlhttp.responseText, options.data_type);
+            // init links with ajax loading
+            // boolean
+            init_links: true,
 
-				// update the last response before the success handler
-				_setLastResponse(xmlhttp, data);
+            // init forms with ajax loading
+            // boolean
+            init_forms: true
+        }, options);
 
-				if (xmlhttp.status==200) {
+		// set event listener for push state changed
+        // this will fire when the back button is pressed, we will loaded the
+        // new page based on the updated current pathname
+        window.addEventListener('popstate', function(event) {
+            // if in cache, restore from there
+            // else, get html
+            // note: get params will be cached, but not post. only the last post
+            //   to an action page will be cached
+            var cached = _cache[location.pathname];
+            if (cached) {
+                document.title = cached.title;
+                $("body").html(cached.html);
+                _setHtml();
+            }
+        });
 
-					// store the cache for later, in the event that
-					// TODO use the cache flag, only store if passed
-					n4s.cache.set(options.url, xmlhttp.responseText, options.data_type);
-
-					// call the success method
-	 				options.success(data);
-
-				} else { // error handler
-
-					// when an error occurs, we will call the developer defined error
-					// handler
-					options.error(data);
-				}
- 			}
+		// store the init as we'll need it again when we have new html
+		if (typeof handler === "function") {
+			_handler = handler;
 		}
 
-		// Set header so the called script knows that it's an XMLHttpRequest
-		xmlhttp.open(options.method.toUpperCase(), options.url, true);
+        // set the html
+		_setHtml(_options);
+	};
 
-		// this is required so that the server-side scripts know if is an ajax request
-		xmlhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    /**
+     * Cache current title and html (this will occur in init, and success)
+     */
+    function _cacheHtml() {
+        _cache[location.pathname] = {
+            title: document.title,
+            html: $("body").first().html()
+        };
+    }
 
- 		if(options.method.toUpperCase() === 'POST') {
- 			xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
- 			var data = function(data) {
- 				var pairs = [];
- 				for(var name in data) {
- 					pairs.push(name+"="+data[name]);
- 				}
- 				return pairs.join("&");
- 			}(options.data);
- 			xmlhttp.send(data);
- 		} else {
- 			xmlhttp.send();
- 		}
 
- 	};
+	/**
+	 * This will set the links of the new html. it will also call the user defined
+     * _handler function
+	 */
+	function _setHtml(options) {
 
-	// return public properties and
-	return {
-		options: {},
-		send: _send,
-		getLastResponse: _getLastResponse
+        // set options (use _options if not given)
+        options = (options) ? options : _options;
+
+        // we'll cache every new page for the back button and if caching it on
+        _cacheHtml();
+
+		// loop through each link and assign onclick event listener
+        if (options['init_links']) {
+            $("a").each( function(index, a) {
+                $(a).on("click", function(e) {
+
+        			// load the HTML
+        			_loadHtml(this);
+
+        			// blur the link
+        			this.blur();
+
+        			// don't let the browser load do handle the link click
+        			e.preventDefault();
+        		});
+            });
+        }
+
+        // loop through each form and handle submission via ajax
+        if (options['init_forms']) {
+            $("form").each( function() {
+
+                $(this).on("submit", function(e) {
+
+                    var form = e.target;
+
+                    // compile data from elements' value
+                    var data = {};
+                    $("input, select, textarea", form).each(function(){
+                        data[this.name] = $(this).val();
+                    });
+
+                    //
+                    n4s.loadHtml(form.action, {
+                        "method": form.method,
+                        "data": data
+                    });
+
+                    return false;
+                });
+            });
+        }
+
+        _handler();
 	}
 
-}();
-
-/**
- * @name utils
- * @module n4s
- * @desc Independent cache storage for ajax and JS apps
- * @author Martyn Bissett
- * @version 0.0.0
- */
-
-if(typeof n4s === "undefined") n4s = {};
-
-/**
- * Collection of helper utils
- */
-n4s.utils = (function() {
-
 	/**
-	 * Extend an object e.g. utils.extend(default, options)
+	 * This will load the url and set the html
+	 * @param string The path (href) to get html
+	 * @return void
 	 */
-	var _extend = function() {
+	var _loadHtml = function(href, options) {
 
-		var new_options = {};
-		for(var i=0; i<arguments.length; i++) {
-			for(var name in arguments[i]) { new_options[name] = arguments[i][name] }
-		}
-		return new_options;
- 	}
+        // overwrite default options with passed in options
+        // the first argument ensures we create a new object as we don't want to
+        // overwrite the default _options
+        options = $.extend({}, _options, options);
 
-	return {
-		extend: _extend,
+		// get the html from the server
+        // some of the ajax options (e.g. data) can be overwritten in this method
+		$.ajax({
+			url: href,
+			cache: options['cache'],
+            method: options['method'] ? options['method'] : "get",
+            data: options['data'] ? options['data'] : {},
+			success: function(html) {
+
+                // update push state
+                history.pushState({}, '', this.url);
+
+				// get the title
+				var newTitle = html.split(/(<title[^>]*>|<\/title>)/ig)[2];
+
+				// get the html by query
+				var newHtml = html.split(/(<body[^>]*>|<\/body>)/ig)[2];
+
+				// newHtml could be empty if query is not "body"
+				if (newHtml) {
+
+					// strip <script> tags within the harvested section
+					// script tags may cause problems if same script is run again
+                    if (!options['run_scripts']) {
+                        newHtml = newHtml.replace(/<script[^>]*>/gi, ' <!-- //removed script').replace(/<\/script>/gi, ' --> ');
+                    }
+
+					// append compiled section to our page
+					// set the new title
+					$("body").html(newHtml);
+					document.title = newTitle;
+
+					// Call init again as it will
+					_setHtml(options);
+				}
+			}
+		});
 	};
+
+    // public properties
+	return _this = {
+		init: _init,
+		loadHtml: _loadHtml
+	}
+
 })();
 
 return n4s;
