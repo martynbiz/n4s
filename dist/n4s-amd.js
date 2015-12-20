@@ -6,9 +6,12 @@ define(["jquery"],function($){
  * @desc Load HTML by ajax to reduce page rendering times
  * @author Martyn Bissett
  * @version 0.0.0
+ * @requires jQuery
  */
 
  // TODO handle hash links e.g. products.php#table
+ // TODO if form method missing, default POST?
+ // TODO cache should store register by query string too (get params)
 
  /**
   * An instance for storing and retrieving data
@@ -75,6 +78,9 @@ define(["jquery"],function($){
             // TODO this
             // boolean
             run_external_scripts: false,
+
+            // extract and replace only a section of the page
+            container_query: "body",
 
             // the default method for fetching html
             // string get|post
@@ -237,6 +243,18 @@ define(["jquery"],function($){
 				// newHtml could be empty if query is not "body"
 				if (newHtml) {
 
+                    // if container is set, then combine the html for matching
+                    // elements from the retrieved html for newHtml
+                    if (options["container_query"].toLowerCase() != "body") {
+                        var a = [];
+                        var tempContainer = document.createElement("DIV");
+                        tempContainer.innerHTML = newHtml;
+                        $(options["container_query"], tempContainer).each(function(index, el) {
+                            a.push(el.innerHTML);
+                        });
+                        newHtml = a.join("");
+                    }
+
 					// strip <script> tags within the harvested section
 					// script tags may cause problems if same script is run again
                     if (!options['run_scripts']) {
@@ -245,7 +263,7 @@ define(["jquery"],function($){
 
 					// append compiled section to our page
 					// set the new title
-					$("body").html(newHtml);
+					$(options["container_query"]).html(newHtml);
 					document.title = newTitle;
 
 					// Call init again as it will

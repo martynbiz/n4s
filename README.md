@@ -59,6 +59,9 @@ n4s.init(null, {
     // boolean
     run_external_scripts: false,
 
+    // extract and replace only a section of the page
+    container_query: "body",
+
     // init links with ajax loading
     // boolean
     init_links: true,
