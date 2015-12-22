@@ -121,3 +121,8 @@ n4s.loadHtml(url, {
 
 Note: the same options given to init() function (e.g. run_scripts) can also be overwritten
 here for this call only.
+
+# TODO #
+
+* handle redirects
+* test?
